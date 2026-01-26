@@ -2,3 +2,5 @@ cowrie-env/
 *.log
 __pycache__/
 cowrie/
+!cowrie/etc/cowrie.cfg
+
