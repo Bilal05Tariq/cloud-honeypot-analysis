@@ -1,4 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environments
 cowrie-env/
+
+# Logs
+cowrie/var/log/
+var/log/
+*.log
+
+# Backups
+*.tar.gz
+
+# SSH Keys
+*.pem
+
+# OS
+.DS_Storecowrie-env/
 *.log
 __pycache__/
 cowrie/
