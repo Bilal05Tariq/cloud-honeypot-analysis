@@ -23,3 +23,7 @@ __pycache__/
 cowrie/
 !cowrie/etc/cowrie.cfg
 
+*.pem
+.env
+*.log
+cowrie/var/log/*
