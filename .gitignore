@@ -1,1 +1,31 @@
+<<<<<<< HEAD
 attacker-env/
+=======
+# Python
+__py# Virtual environments
+attacker-env/
+cowrie-env/
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+var/log/
+cowrie/var/log/*
+
+# Backups
+*.tar.gz
+
+# SSH Keys
+*.pem
+
+# Environment files
+.env
+
+# OS files
+.DS_Store
+
+# Keep config file
+!cowrie/etc/cowrie.cfg
