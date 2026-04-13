@@ -2,7 +2,7 @@ import paramiko
 import time
 import random
 
-TARGET_IP = "35.179.176.192"
+TARGET_IP = "13.41.76.128"
 PORT = 2222
 
 usernames = ["root", "admin", "user", "test", "ubuntu", "guest"]
