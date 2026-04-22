@@ -1,303 +1,54 @@
-# Cloud-Based Honeypot with Automated Attack Log Analysis
+# Cloud-Based Honeypot System for Attacker Behaviour Analysis
 
-## Project Overview
-
-This project implements a **cloud-based honeypot environment** designed to capture, collect, and analyse malicious activity targeting exposed network services. The system deploys a **Cowrie SSH/Telnet honeypot** on an AWS EC2 instance and integrates it with a log processing pipeline using the **Elastic Stack (ELK)**.
-
-The primary objective is to simulate vulnerable services in a controlled environment to observe attacker behaviour, capture attack data, and process the collected logs for analysis.
-
-The system demonstrates how cloud infrastructure can be used to deploy honeypots and build an automated pipeline for security monitoring and threat analysis.
+**Author:** Bilal Tariq | Final Year Cybersecurity Project
 
 ---
 
-# Project Motivation
+## Overview
 
-Cyber attacks targeting exposed services such as SSH are extremely common on the public internet. Attackers frequently attempt:
-
-* Brute force login attempts
-* Automated credential attacks
-* Malware deployment
-* Command execution
-
-Traditional defensive systems often block attacks but provide limited insight into attacker behaviour.
-
-A **honeypot** allows researchers to safely observe malicious activity by simulating vulnerable systems. By capturing attacker interactions, security analysts can gain insight into:
-
-* Attack methods
-* Credential dictionaries
-* Automated attack tools
-* Common command sequences
-
-This project aims to build a **controlled environment for capturing and analysing these interactions**.
+This project deploys a Cowrie SSH honeypot on an AWS EC2 instance to capture and analyse attacker behaviour. A custom Python-based brute force attacker script simulates realistic SSH attack traffic against the honeypot, and a Python data pipeline extracts, analyses and visualises the captured logs. The focus of the project is **behavioural analysis** — understanding how attackers interact with exposed SSH services, what credentials they use, and what commands they execute after gaining access.
 
 ---
 
-# Project Objectives
+## System Architecture
 
-The key objectives of the project are:
-
-1. Deploy a **cloud-hosted honeypot** capable of simulating vulnerable services.
-2. Capture attacker login attempts and command activity.
-3. Automatically collect honeypot logs.
-4. Process and normalise captured log data.
-5. Store structured attack data for analysis.
-6. Provide a platform for further visualisation and threat analysis.
+Attacker Script (EC2) → Cowrie SSH Honeypot (AWS EC2 — Port 2222) → cowrie.json (Structured log file) → extract.py → login_attempts.csv / successful_logins.csv / commands.csv → analyse.py + visualise.py + advanced_analysis.py → Charts, CSVs, Session Timeline, Brute Force Classification
 
 ---
 
-# System Architecture
+## Technologies
 
-Attacker
-↓
-Cowrie Honeypot (AWS EC2)
-↓
-Filebeat (Log Collection)
-↓
-Logstash (Log Processing)
-↓
-Elasticsearch (Log Storage)
-↓
-Kibana (Visualisation)
-
----
-
-# Technologies Used
-
-| Technology             | Purpose                                                  |
-| ---------------------- | -------------------------------------------------------- |
-| AWS EC2 (Ubuntu 22.04) | Cloud environment hosting the honeypot                   |
-| Cowrie Honeypot        | Simulated SSH/Telnet service capturing attacker activity |
-| Python 3.10            | Runtime environment for Cowrie                           |
-| Filebeat               | Log shipping tool                                        |
-| Logstash               | Log processing and parsing                               |
-| Elasticsearch          | Storage and indexing of log data                         |
-| Git / GitHub           | Version control and backup                               |
-| WSL2 Ubuntu            | Local development environment                            |
+| Technology | Purpose |
+|---|---|
+| AWS EC2 (Ubuntu 22.04) | Cloud hosting for honeypot |
+| Cowrie | SSH honeypot capturing attacker interactions |
+| Python 3.10 | Attack simulation and data analysis pipeline |
+| pandas | Data extraction and analysis |
+| matplotlib / seaborn | Data visualisation |
+| sshpass | SSH password automation for attacker script |
+| Git / GitHub | Version control |
+| WSL2 Ubuntu | Local development environment |
 
 ---
 
-# Project Structure
+## Project Structure
 
-cloud-honeypot-analysis/
-
-cowrie/                 → Cowrie honeypot source code
-etc/                    → Configuration files
-docs/                   → Project documentation
-analysis/               → Log analysis scripts (future work)
-README.md
-.gitignore
+cloud-honeypot-analysis/ ├── cowrie/ → Cowrie honeypot source ├── results/ → Generated charts and CSVs ├── attacker.py → Automated brute force attack script ├── extract.py → Log parsing and CSV export ├── analyse.py → Statistical analysis ├── visualise.py → Data visualisation ├── advanced_analysis.py → Session reconstruction and brute force detection ├── cowrie.json → Raw honeypot logs ├── login_attempts.csv → Failed login dataset ├── successful_logins.csv → Successful login dataset └── commands.csv → Command execution dataset
 
 ---
 
-# Development Progress
+## Key Features
 
-## Task 1 — Local Environment Setup
-
-### Completed
-
-* Installed **WSL2**
-* Installed **Ubuntu Linux**
-* Installed required tools:
-
-  * Git
-  * Python
-  * OpenSSH
-  * Nmap
-  * Bash utilities
-* Created project directories
-
-### Lessons Learned
-
-* Importance of using a consistent Linux environment
-* Managing dependencies using Python virtual environments
+- Automated brute force attacker simulating 20 failed attempts before a successful login
+- Cowrie configured with userdb.txt to only accept a single whitelisted credential
+- Full data extraction pipeline parsing Cowrie JSON logs into structured CSVs
+- Statistical analysis of credential patterns, command usage and temporal behaviour
+- Session reconstruction showing full attacker timelines
+- Brute force IP classification based on attempt thresholds
+- Five visualisation charts exported as PNG for reporting
 
 ---
 
-# Task 2 — AWS Cloud Infrastructure
+## Security Notice
 
-### Completed
-
-* Created AWS account
-* Launched **Ubuntu EC2 instance**
-* Generated SSH key pair
-* Configured **security groups**
-* Connected to EC2 from WSL using SSH
-
-Example connection command:
-
-ssh -i ~/.ssh/cowrie-key.pem ubuntu@<EC2-IP>
-
-### Challenges
-
-* Correctly configuring AWS security groups
-* Managing SSH keys and access permissions
-
-### Lessons Learned
-
-* Cloud instances require strict firewall configuration
-* Proper SSH key management is essential for secure access
-
----
-
-# Task 3 — Deploy Cowrie Honeypot
-
-### Completed
-
-* Installed required dependencies
-* Created Python virtual environment
-* Cloned Cowrie repository
-* Configured honeypot settings
-* Enabled SSH and Telnet honeypot services
-* Verified attacker connections
-* Confirmed logs were generated
-
-Example Cowrie startup command:
-
-PYTHONPATH=src twistd -n cowrie
-
-### Challenges
-
-During deployment several issues were encountered:
-
-* Python version compatibility
-* Missing honeypot filesystem files
-* Configuration errors
-* Runtime dependency issues
-
-### Solutions
-
-These issues were resolved by:
-
-* Downgrading Python version to **3.10**
-* Correcting configuration paths
-* Ensuring required directories existed
-* Verifying Cowrie dependencies
-
-### Lessons Learned
-
-* Honeypot software is sensitive to environment configuration
-* Debugging logs is essential for diagnosing deployment issues
-
----
-
-# Task 4 — Log Collection Pipeline
-
-## Task 4.1 — Filebeat
-
-### Completed
-
-* Installed Filebeat on EC2
-* Configured Filebeat to monitor Cowrie logs
-* Verified log collection
-
-### Lessons Learned
-
-* Filebeat acts as a lightweight log shipper
-* Proper file path configuration is required
-
----
-
-## Task 4.2 — Logstash
-
-### Completed
-
-* Installed Logstash
-* Created Logstash pipeline
-* Configured input from Filebeat
-* Parsed incoming Cowrie JSON logs
-
-Pipeline structure:
-
-Filebeat → Logstash → Elasticsearch
-
-### Challenges
-
-* Performance issues on small EC2 instances
-* Resource limitations on free-tier hardware
-
-### Solution
-
-The EC2 instance type was upgraded to improve performance.
-
----
-
-# Task 4.3 — Elasticsearch (Current Stage)
-
-The next stage of the project is the deployment of **Elasticsearch** to store and index captured honeypot logs.
-
-This will allow:
-
-* Structured storage of attack data
-* Fast searching of attacker activity
-* Integration with Kibana dashboards
-
----
-
-# Example Honeypot Log Entry
-
-Example Cowrie JSON log:
-
-{
-"eventid": "cowrie.session.connect",
-"src_ip": "161.74.224.2",
-"protocol": "ssh",
-"message": "New connection"
-}
-
-These logs will be indexed in Elasticsearch for further analysis.
-
----
-
-# Backup Strategy
-
-To prevent data loss, multiple backup methods were implemented:
-
-1. EC2 EBS Snapshot
-2. Local compressed backup archive
-3. GitHub repository backup
-4. Cloud instance backup
-
-This ensures the project can be restored if the instance fails.
-
----
-
-# Security Considerations
-
-The honeypot operates in a **controlled cloud environment**. Security measures include:
-
-* Restricted inbound ports
-* Isolated instance configuration
-* No exposure of sensitive infrastructure
-* Controlled log storage
-
-The system captures simulated attack activity for research purposes.
-
----
-
-# Future Work
-
-The remaining development stages include:
-
-* Completing Elasticsearch deployment
-* Installing Kibana for data visualisation
-* Building attack dashboards
-* Analysing attacker behaviour patterns
-* Generating statistics from captured logs
-
----
-
-# Educational Context
-
-This project is developed as part of a **Final Year Cybersecurity Project** focusing on:
-
-* Honeypot deployment
-* Cloud security
-* Attack monitoring
-* Automated log analysis
-
----
-
-# Author
-
-Bilal Tariq
-Final Year Cybersecurity Project
+All attack traffic is simulated against the project's own honeypot instance on its own AWS EC2 infrastructure for academic research purposes only.
